@@ -62,6 +62,10 @@ versions:
 	bazel version
 	cd templates/buildsystems/$(BUILD_DEFINITIONS)/pants; pants --version
 
+
+morrisjs-charts:
+	@python scripts/json2morrisjs.py
+
 ## pants
 # Assuming pants is globally installed, even though
 # typically pants may be a local executable
@@ -69,7 +73,7 @@ versions:
 .PHONY: pants
 pants: $(BUILD_DIR)/pants/src $(BUILD_DIR)/pants/BUILD
 	$(info ******* pants start)
-	cd $(BUILD_DIR)/pants; time pants test :test -q
+	cd $(BUILD_DIR)/pants; time -o ../reports/pants.json -f$(FORMAT) pants test :test
 
 .PHONY: $(BUILD_DIR)/pants/src
 $(BUILD_DIR)/pants/src: $(BUILD_DIR)/project
@@ -86,7 +90,7 @@ $(BUILD_DIR)/pants/BUILD: $(BUILD_DIR)/project
 bazel: $(BUILD_DIR)/bazel/src $(BUILD_DIR)/bazel/BUILD
 	$(info ******* bazel start)
 	cd $(BUILD_DIR)/bazel; bazel fetch -- :all
-	cd $(BUILD_DIR)/bazel; time bazel test --javacopt='-extra_checks:off' //:example-tests
+	cd $(BUILD_DIR)/bazel; time -o ../reports/bazel.json -f$(FORMAT) bazel test --javacopt='-extra_checks:off' //:example-tests
 
 .PHONY: $(BUILD_DIR)/bazel/src
 $(BUILD_DIR)/bazel/src: $(BUILD_DIR)/project
@@ -101,7 +105,7 @@ $(BUILD_DIR)/bazel/BUILD: $(BUILD_DIR)/project
 .PHONY: maven
 maven: $(BUILD_DIR)/maven/src $(BUILD_DIR)/maven/pom.xml
 	$(info ******* maven start)
-	cd $(BUILD_DIR)/maven; time mvn -q package -Dsurefire.printSummary=false
+	cd $(BUILD_DIR)/maven; time -o ../reports/maven.json -f$(FORMAT) mvn package -Dsurefire.printSummary=false
 
 .PHONY: $(BUILD_DIR)/maven/src
 $(BUILD_DIR)/maven/src: $(BUILD_DIR)/project
@@ -116,7 +120,7 @@ $(BUILD_DIR)/maven/pom.xml: $(BUILD_DIR)/project
 .PHONY: gradle
 gradle: $(BUILD_DIR)/gradle/src $(BUILD_DIR)/gradle/build.gradle
 	$(info ******* gradle start)
-	cd $(BUILD_DIR)/gradle; time gradle -q test jar
+	cd $(BUILD_DIR)/gradle; time -o ../reports/gradle.json -f$(FORMAT) gradle -q test jar
 
 .PHONY: $(BUILD_DIR)/gradle/src
 $(BUILD_DIR)/gradle/src: $(BUILD_DIR)/project
@@ -131,7 +135,7 @@ $(BUILD_DIR)/gradle/build.gradle: $(BUILD_DIR)/project
 .PHONY: sbt
 sbt: $(BUILD_DIR)/sbt/src $(BUILD_DIR)/sbt/build.sbt
 	$(info ******* sbt start)
-	cd $(BUILD_DIR)/sbt; time sbt -java-home $(JAVA_HOME) test package
+	cd $(BUILD_DIR)/sbt; time -o ../reports/sbt.json -f$(FORMAT) sbt -java-home $(JAVA_HOME) test package
 
 .PHONY: $(BUILD_DIR)/sbt/src
 $(BUILD_DIR)/sbt/src: $(BUILD_DIR)/project
@@ -147,7 +151,7 @@ $(BUILD_DIR)/sbt/build.sbt: $(BUILD_DIR)/project
 .PHONY: buildr
 buildr: $(BUILD_DIR)/buildr/src $(BUILD_DIR)/buildr/buildfile
 	$(info ******* buildr start)
-	cd $(BUILD_DIR)/buildr; time buildr -q package
+	cd $(BUILD_DIR)/buildr; time -o ../reports/buildr.json -f$(FORMAT) buildr package
 
 .PHONY: $(BUILD_DIR)/buildr/src
 $(BUILD_DIR)/buildr/src: $(BUILD_DIR)/project
@@ -183,7 +187,7 @@ buck: $(BUILD_DIR)/buck/src $(BUILD_DIR)/buck/BUCK
 	$(info ******* buck start)
 	cd $(BUILD_DIR)/buck; buck fetch //:junit
 	cd $(BUILD_DIR)/buck; buck fetch //:hamcrest-core
-	cd $(BUILD_DIR)/buck; time buck test --all
+	cd $(BUILD_DIR)/buck; time -o ../reports/buck.json -f$(FORMAT) buck test --all
 
 .PHONY: $(BUILD_DIR)/buck/src
 $(BUILD_DIR)/buck/src: $(BUILD_DIR)/project
@@ -198,7 +202,7 @@ $(BUILD_DIR)/buck/BUCK: $(BUILD_DIR)/project
 .PHONY: ant_ivy
 ant_ivy: $(BUILD_DIR)/ivy/src $(BUILD_DIR)/ivy/build.xml
 	$(info ******* ant-ivy start)
-	cd $(BUILD_DIR)/ivy; time ant jar -q
+	cd $(BUILD_DIR)/ivy; time -o ../reports/ant.json -f$(FORMAT) ant jar
 
 .PHONY: $(BUILD_DIR)/ivy/src
 $(BUILD_DIR)/ivy/src: $(BUILD_DIR)/project
@@ -216,6 +220,7 @@ $(BUILD_DIR)/ivy/build.xml: $(BUILD_DIR)/project
 
 $(BUILD_DIR)/project: $(DOWNLOAD_SOURCES_DIR)/$(SOURCE_PROJECT)
 	@mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)/reports
 # softlinking causes problems with some tools (pants)
 	@cd $(BUILD_DIR); cp -rf ../$(DOWNLOAD_SOURCES_DIR)/$(SOURCE_PROJECT) project
 
