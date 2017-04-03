@@ -115,6 +115,8 @@ Compiler speed may differ for different compilers. The scala compiler and clojur
 
 Incremental re-compilation, meaning compiling only files that are affected by a change, can drastically reduce build times.
 
+Compilation avoidance extends incremental compilation. This is a new feature in gradle 3.4, where dependent classfiles do not get recompiled when a change in one class file is API compatible with the previous version.
+
 Incremental build steps beyond compilation help (e.g. Maven can compile incrementally, but not test incrementally).
 
 Incremental builds for sub-module filesets. Several buildsystems can (re-)build only those submodules that have change, but cannot only (re-)build only half a submodule. Being able to incrementally rebuild smaller parts can speed up builds in specific situations.
