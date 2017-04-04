@@ -10,11 +10,4 @@ export TARGET_NAME=$(SOURCE_PROJECT)-$(SUBPROJECT_NUM)-$(FILE_NUM)
 
 # must use lein-sub in contrast to default leiningen
 export BUILDSYSTEMS=\
-gradle \
-maven \
-buildr \
-ant_ivy \
-buck \
-sbt \
-bazel \
 pants
